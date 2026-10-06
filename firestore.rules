@@ -1,0 +1,58 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidUserProfile(data) {
+      return data.userId == request.auth.uid
+        && data.highestUnlockedLevel is int
+        && data.highestUnlockedLevel >= 1
+        && data.highestUnlockedLevel <= 20
+        && data.totalScore is int
+        && data.totalScore >= 0
+        && data.hintsRemaining is int
+        && data.hintsRemaining >= 0
+        && (!('displayName' in data) || data.displayName is string)
+        && (!('completedLevels' in data) || data.completedLevels is list)
+        && (!('updatedAt' in data) || data.updatedAt is timestamp);
+    }
+
+    function isValidLevelProgress(data, levelId) {
+      return data.userId == request.auth.uid
+        && data.levelId is int
+        && data.levelId >= 1
+        && data.levelId <= 20
+        && data.completed is bool
+        && data.bestScore is int
+        && data.bestScore >= 0
+        && (!('updatedAt' in data) || data.updatedAt is timestamp);
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // User Profile & Progress
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create, update: if isOwner(userId) && isValidUserProfile(request.resource.data);
+      allow delete: if isOwner(userId);
+
+      // Subcollection for detailed level progress
+      match /levels/{levelId} {
+        allow read: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidLevelProgress(request.resource.data, levelId);
+        allow delete: if isOwner(userId);
+      }
+    }
+  }
+}

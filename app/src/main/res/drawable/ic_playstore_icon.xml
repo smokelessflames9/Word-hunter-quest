@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="512dp"
+    android:height="512dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+
+    <!-- Background with rounded adventure card frame -->
+    <path
+        android:pathData="M 64,0 L 448,0 A 64,64 0 0,1 512,64 L 512,448 A 64,64 0 0,1 448,512 L 64,512 A 64,64 0 0,1 0,448 L 0,64 A 64,64 0 0,1 64,0 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="0"
+                android:startY="0"
+                android:endX="512"
+                android:endY="512"
+                android:type="linear">
+                <item android:color="#0F172A" android:offset="0.0" />
+                <item android:color="#1E293B" android:offset="0.5" />
+                <item android:color="#0F2D4A" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Grid lines -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M 96,128 L 416,128 M 96,213 L 416,213 M 96,298 L 416,298 M 96,384 L 416,384"
+        android:strokeWidth="3"
+        android:strokeColor="#253858" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M 128,96 L 128,416 M 213,96 L 213,416 M 298,96 L 298,416 M 384,96 L 384,416"
+        android:strokeWidth="3"
+        android:strokeColor="#253858" />
+
+    <!-- Puzzle Highlight Tile -->
+    <path
+        android:fillColor="#2238BDF8"
+        android:pathData="M 128,128 h 85 v 85 h -85 Z" />
+    <path
+        android:fillColor="#2238BDF8"
+        android:pathData="M 298,128 h 86 v 85 h -86 Z" />
+    <path
+        android:fillColor="#2238BDF8"
+        android:pathData="M 128,298 h 85 v 86 h -85 Z" />
+
+    <!-- Big Bold Golden 'W' -->
+    <path
+        android:pathData="M 130,150 L 170,150 L 210,300 L 240,180 L 272,180 L 302,300 L 342,150 L 382,150 L 330,360 L 285,360 L 256,245 L 227,360 L 182,360 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="130"
+                android:startY="150"
+                android:endX="382"
+                android:endY="360"
+                android:type="linear">
+                <item android:color="#FDE047" android:offset="0.0" />
+                <item android:color="#F59E0B" android:offset="0.6" />
+                <item android:color="#D97706" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M 130,150 L 170,150 L 210,300 L 240,180 L 272,180 L 302,300 L 342,150 L 382,150 L 330,360 L 285,360 L 256,245 L 227,360 L 182,360 Z"
+        android:strokeWidth="6"
+        android:strokeColor="#FEF08A" />
+
+    <!-- Explorer Magnifying Glass Lens -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M 315,250 A 65,65 0 1,0 315,380 A 65,65 0 1,0 315,250 Z"
+        android:strokeWidth="16"
+        android:strokeColor="#38BDF8" />
+    <path
+        android:fillColor="#3538BDF8"
+        android:pathData="M 315,258 A 57,57 0 1,0 315,372 A 57,57 0 1,0 315,258 Z" />
+
+    <!-- Handle -->
+    <path
+        android:pathData="M 365,365 L 435,435"
+        android:strokeWidth="20"
+        android:strokeLineCap="round"
+        android:strokeColor="#0284C7" />
+
+    <!-- Sparkle -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M 305,230 L 312,215 L 319,230 L 334,237 L 319,244 L 312,259 L 305,244 L 290,237 Z" />
+</vector>

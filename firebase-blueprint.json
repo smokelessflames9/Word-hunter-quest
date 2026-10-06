@@ -1,0 +1,80 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile with quest progress, total score, and hints count",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Firebase Auth UID of the player"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Display name of the user"
+        },
+        "highestUnlockedLevel": {
+          "type": "integer",
+          "description": "Highest level unlocked (1-20)"
+        },
+        "totalScore": {
+          "type": "integer",
+          "description": "Persistent total quest score"
+        },
+        "hintsRemaining": {
+          "type": "integer",
+          "description": "Available hint count"
+        },
+        "completedLevels": {
+          "type": "array",
+          "description": "List of completed level numbers"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of last progress update"
+        }
+      },
+      "required": ["userId", "highestUnlockedLevel", "totalScore", "hintsRemaining"]
+    },
+    "LevelProgress": {
+      "title": "LevelProgress",
+      "description": "Individual level completion status and high score",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Firebase Auth UID"
+        },
+        "levelId": {
+          "type": "integer",
+          "description": "Level number (1-20)"
+        },
+        "completed": {
+          "type": "boolean",
+          "description": "Whether the level is completed"
+        },
+        "bestScore": {
+          "type": "integer",
+          "description": "Best score achieved on this level"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update timestamp"
+        }
+      },
+      "required": ["userId", "levelId", "completed", "bestScore"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User progress and score document scoped to owner"
+    },
+    "/users/{userId}/levels/{levelId}": {
+      "schema": "LevelProgress",
+      "description": "Per-level progress record scoped to owner"
+    }
+  }
+}

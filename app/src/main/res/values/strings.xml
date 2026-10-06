@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">WORD HUNTER QUEST</string>
+    <string name="game_title">WORD HUNTER QUEST</string>
+    <string name="developer_name">Thomas Tech WS</string>
+    <string name="game_version">Version 1.0.0</string>
+    <string name="about_description">Word Hunter Quest is an adventure in word discovery! Search for hidden words horizontally, vertically, diagonally, forward and backward across 20 progressively challenging levels.</string>
+</resources>

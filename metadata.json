@@ -1,0 +1,6 @@
+{
+  "name": "WORD HUNTER QUEST",
+  "description": "WORD HUNTER QUEST - Word search puzzle adventure with 20 challenging levels, categories, scoring, hints, and AdMob integration.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
