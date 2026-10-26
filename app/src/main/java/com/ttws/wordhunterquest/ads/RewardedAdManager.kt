@@ -21,7 +21,7 @@ class RewardedAdManager(private val context: Context) {
     }
 
     fun preloadAd() {
-        if (isLoading || rewardedAd != null) return
+        if (isLoading || rewardedAd != null || AdMobManager.isEmulator()) return
         isLoading = true
 
         try {
@@ -47,17 +47,22 @@ class RewardedAdManager(private val context: Context) {
         } catch (e: Exception) {
             isLoading = false
             rewardedAd = null
-            Log.e(tag, "Error loading rewarded ad: ${e.message}")
+            Log.w(tag, "Error loading rewarded ad: ${e.message}")
         }
     }
 
-    fun isAdAvailable(): Boolean = rewardedAd != null
+    fun isAdAvailable(): Boolean = rewardedAd != null || AdMobManager.isEmulator()
 
     fun showRewardedAd(
         activity: Activity,
         onRewardEarned: () -> Unit,
         onUnavailable: () -> Unit
     ) {
+        if (AdMobManager.isEmulator()) {
+            onRewardEarned()
+            return
+        }
+
         val ad = rewardedAd
         if (ad == null) {
             preloadAd()

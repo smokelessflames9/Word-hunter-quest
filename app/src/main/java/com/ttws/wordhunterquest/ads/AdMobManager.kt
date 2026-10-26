@@ -1,6 +1,7 @@
 package com.ttws.wordhunterquest.ads
 
 import android.content.Context
+import android.os.Build
 import android.util.Log
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
@@ -10,23 +11,33 @@ object AdMobManager {
     private const val TAG = "AdMobManager"
     private var isInitialized = false
 
+    fun isEmulator(): Boolean {
+        return Build.FINGERPRINT.startsWith("generic") ||
+            Build.FINGERPRINT.startsWith("unknown") ||
+            Build.MODEL.contains("google_sdk") ||
+            Build.MODEL.contains("Emulator") ||
+            Build.MODEL.contains("Android SDK built for") ||
+            Build.MODEL.contains("sdk_gphone") ||
+            Build.HARDWARE.contains("goldfish") ||
+            Build.HARDWARE.contains("ranchu") ||
+            Build.PRODUCT.contains("sdk") ||
+            Build.PRODUCT.contains("emulator")
+    }
+
     fun initialize(context: Context) {
-        if (isInitialized) return
+        if (isInitialized || isEmulator()) return
         try {
-            // Configure test device request settings for emulator and development
             val configuration = RequestConfiguration.Builder()
                 .setTestDeviceIds(listOf(AdRequest.DEVICE_ID_EMULATOR))
                 .build()
             MobileAds.setRequestConfiguration(configuration)
 
-            // Initialize Mobile Ads SDK
             MobileAds.initialize(context) { initializationStatus ->
                 isInitialized = true
                 Log.d(TAG, "AdMob SDK Initialized: ${initializationStatus.adapterStatusMap.keys}")
             }
         } catch (e: Exception) {
-            // Graceful handling: the game continues without interruption if ads fail to initialize
-            Log.e(TAG, "AdMob initialization failed gracefully: ${e.message}")
+            Log.w(TAG, "AdMob initialization skipped: ${e.message}")
         }
     }
 }

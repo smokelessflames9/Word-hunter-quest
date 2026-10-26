@@ -21,7 +21,7 @@ class InterstitialAdManager(private val context: Context) {
     }
 
     fun preloadAd() {
-        if (isLoading || interstitialAd != null) return
+        if (isLoading || interstitialAd != null || AdMobManager.isEmulator()) return
         isLoading = true
 
         try {
