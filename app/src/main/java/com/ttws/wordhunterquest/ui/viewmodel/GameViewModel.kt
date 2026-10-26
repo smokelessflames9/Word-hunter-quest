@@ -74,7 +74,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     init {
         loadInitialState()
         observeAuthState()
-        authManager.attemptAutoSignIn(viewModelScope)
     }
 
     private fun loadInitialState() {
@@ -164,6 +163,24 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 userEmail = null
             )
             showToast("Signed out of Google account.")
+        }
+    }
+
+    fun deleteAccountAndData() {
+        viewModelScope.launch {
+            try {
+                questRepository.deleteUserCloudData()
+            } catch (_: Exception) {}
+            try {
+                authManager.deleteAccount()
+            } catch (_: Exception) {}
+            resetAllProgress()
+            _uiState.value = _uiState.value.copy(
+                isSignedIn = false,
+                userDisplayName = null,
+                userEmail = null
+            )
+            showToast("Account and cloud data deleted.")
         }
     }
 

@@ -2,12 +2,14 @@ package com.ttws.wordhunterquest.auth
 
 import android.app.Activity
 import android.content.Context
+import android.content.ContextWrapper
 import android.util.Log
 import androidx.credentials.ClearCredentialStateRequest
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.GetCredentialCancellationException
+import androidx.credentials.exceptions.NoCredentialException
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
@@ -23,11 +25,23 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
+/**
+ * Safely unwraps ContextWrapper instances to retrieve the hosting Activity.
+ */
+fun Context.findActivity(): Activity? {
+    var currentContext = this
+    while (currentContext is ContextWrapper) {
+        if (currentContext is Activity) return currentContext
+        currentContext = currentContext.baseContext
+    }
+    return null
+}
+
 class AuthManager(private val context: Context) {
 
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val credentialManager: CredentialManager = CredentialManager.create(context)
-    private val tag = "AuthManager"
+    private val tag = "Auth"
 
     private val _currentUser = MutableStateFlow<FirebaseUser?>(auth.currentUser)
     val currentUser: StateFlow<FirebaseUser?> = _currentUser.asStateFlow()
@@ -39,9 +53,10 @@ class AuthManager(private val context: Context) {
     }
 
     /**
-     * Silent background auto-sign-in on startup using GetGoogleIdOption.
+     * Silent background auto-sign-in using GetGoogleIdOption with an Activity context.
      */
     fun attemptAutoSignIn(
+        activity: Activity,
         scope: CoroutineScope,
         onSuccess: () -> Unit = {},
         onFailed: () -> Unit = {}
@@ -71,7 +86,7 @@ class AuthManager(private val context: Context) {
 
         scope.launch {
             try {
-                val result = credentialManager.getCredential(context, request)
+                val result = credentialManager.getCredential(activity, request)
                 val credential = result.credential
                 if (credential is CustomCredential && credential.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
                     val googleIdToken = GoogleIdTokenCredential.createFrom(credential.data).idToken
@@ -83,7 +98,7 @@ class AuthManager(private val context: Context) {
                     onFailed()
                 }
             } catch (e: Exception) {
-                Log.d(tag, "Silent auto-sign-in not available: ${e.message}")
+                Log.d(tag, "Silent auto-sign-in skipped: ${e.message}")
                 onFailed()
             }
         }
@@ -127,8 +142,11 @@ class AuthManager(private val context: Context) {
                     onError("Unexpected credential format received.")
                 }
             } catch (e: GetCredentialCancellationException) {
-                Log.w(tag, "Google Sign-In flow cancelled or dismissed: ${e.message}", e)
+                Log.w(tag, "Google Sign-In cancelled or dismissed: ${e.message}", e)
                 onCancelled()
+            } catch (e: NoCredentialException) {
+                Log.w(tag, "No Google account available on device: ${e.message}", e)
+                onError("No Google account found on this device. Please add a Google account in Android Settings or continue with Local Auto-Save.")
             } catch (e: Exception) {
                 Log.e(tag, "Google Sign-In failed", e)
                 onError(e.localizedMessage ?: "Sign-in failed. Please try again.")
@@ -154,5 +172,15 @@ class AuthManager(private val context: Context) {
                 onComplete()
             }
         }
+    }
+
+    /**
+     * Delete user account from Firebase Auth and clear credentials.
+     */
+    suspend fun deleteAccount() {
+        auth.currentUser?.delete()?.await()
+        try {
+            credentialManager.clearCredentialState(ClearCredentialStateRequest())
+        } catch (_: Exception) {}
     }
 }

@@ -163,4 +163,15 @@ class QuestRepository(private val db: FirebaseFirestore) {
 
         return newProfile
     }
+
+    suspend fun deleteUserCloudData() {
+        val uid = requireUserId()
+        val path = "users/$uid"
+        try {
+            db.collection("users").document(uid).delete().await()
+        } catch (e: Exception) {
+            handleFirestoreError(e, OperationType.DELETE, path)
+            throw e
+        }
+    }
 }

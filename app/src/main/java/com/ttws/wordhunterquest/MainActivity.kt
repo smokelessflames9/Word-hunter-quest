@@ -100,6 +100,7 @@ class MainActivity : ComponentActivity() {
                                 onConfirmReset = { viewModel.resetAllProgress() },
                                 onSignOut = { viewModel.signOut() },
                                 onSignInRequested = { viewModel.navigateTo(Screen.AUTH) },
+                                onDeleteAccountAndData = { viewModel.deleteAccountAndData() },
                                 onNavigate = { viewModel.navigateTo(it) },
                                 onBack = { viewModel.navigateTo(Screen.HOME) }
                             )

@@ -75,12 +75,14 @@ fun SettingsScreen(
     onConfirmReset: () -> Unit,
     onSignOut: () -> Unit,
     onSignInRequested: () -> Unit,
+    onDeleteAccountAndData: () -> Unit,
     onNavigate: (Screen) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     BackHandler { onBack() }
     var showPrivacyPolicyDialog by remember { mutableStateOf(false) }
+    var showDeleteAccountDialog by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier
@@ -174,21 +176,40 @@ fun SettingsScreen(
                                 Text("SIGN OUT", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
                             }
                         }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End
+                        ) {
+                            Text(
+                                text = "Delete Account & Cloud Data",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = QuestRuby,
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .clickable { showDeleteAccountDialog = true }
+                                    .padding(horizontal = 6.dp, vertical = 4.dp)
+                                    .testTag("delete_account_button")
+                            )
+                        }
                     } else {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Column(modifier = Modifier.weight(1f)) {
+                            Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
                                 Text(
-                                    text = "Guest Player (Offline)",
+                                    text = "Auto-Save Active (On-Device)",
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = TextPrimary
+                                    color = com.ttws.wordhunterquest.ui.theme.QuestEmerald
                                 )
                                 Text(
-                                    text = "Connect Google account to backup progress",
+                                    text = "Progress saves automatically on your device. Sign in with Google to also sync to Cloud.",
                                     fontSize = 12.sp,
                                     color = TextSecondary
                                 )
@@ -374,6 +395,48 @@ fun SettingsScreen(
                 OutlinedButton(
                     onClick = { onShowResetConfirmation(false) },
                     modifier = Modifier.testTag("cancel_reset_button")
+                ) {
+                    Text("CANCEL", color = TextPrimary)
+                }
+            },
+            containerColor = DeepNavy,
+            shape = RoundedCornerShape(20.dp)
+        )
+    }
+
+    // Delete Account Confirmation Dialog (Google Play Account Deletion Policy)
+    if (showDeleteAccountDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteAccountDialog = false },
+            title = {
+                Text(
+                    text = "Delete Account & Cloud Data?",
+                    fontWeight = FontWeight.Black,
+                    color = QuestRuby
+                )
+            },
+            text = {
+                Text(
+                    text = "This will permanently delete your Google account link and all saved cloud progression from Firestore. This action cannot be undone.",
+                    color = TextPrimary
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showDeleteAccountDialog = false
+                        onDeleteAccountAndData()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = QuestRuby, contentColor = Color.White),
+                    modifier = Modifier.testTag("confirm_delete_account_button")
+                ) {
+                    Text("DELETE PERMANENTLY", fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                OutlinedButton(
+                    onClick = { showDeleteAccountDialog = false },
+                    modifier = Modifier.testTag("cancel_delete_account_button")
                 ) {
                     Text("CANCEL", color = TextPrimary)
                 }

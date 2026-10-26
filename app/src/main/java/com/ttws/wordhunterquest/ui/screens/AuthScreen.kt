@@ -1,10 +1,7 @@
 package com.ttws.wordhunterquest.ui.screens
 
-import android.app.Activity
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,10 +12,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.CloudDone
 import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -26,9 +27,10 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,7 +38,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -46,11 +47,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ttws.wordhunterquest.auth.AuthManager
+import com.ttws.wordhunterquest.auth.findActivity
 import com.ttws.wordhunterquest.ui.components.BannerAdView
 import com.ttws.wordhunterquest.ui.components.GameLogo
 import com.ttws.wordhunterquest.ui.theme.CardNavy
 import com.ttws.wordhunterquest.ui.theme.MidnightBlue
 import com.ttws.wordhunterquest.ui.theme.QuestCyan
+import com.ttws.wordhunterquest.ui.theme.QuestEmerald
 import com.ttws.wordhunterquest.ui.theme.QuestGold
 import com.ttws.wordhunterquest.ui.theme.QuestGoldLight
 import com.ttws.wordhunterquest.ui.theme.QuestRuby
@@ -66,43 +69,59 @@ fun AuthScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val activity = context as? Activity
+    val activity = remember(context) { context.findActivity() }
     val scope = rememberCoroutineScope()
 
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
+    // Attempt silent auto-sign-in once when screen mounts with a valid Activity
+    LaunchedEffect(activity) {
+        if (activity != null) {
+            authManager.attemptAutoSignIn(
+                activity = activity,
+                scope = scope,
+                onSuccess = onAuthSuccess
+            )
+        }
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
             .background(MidnightBlue)
-            .padding(horizontal = 24.dp, vertical = 20.dp)
             .testTag("auth_screen"),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        Spacer(modifier = Modifier.height(10.dp))
-
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.widthIn(max = 400.dp)
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp, vertical = 16.dp)
+                .widthIn(max = 420.dp)
         ) {
             // Game Logo
-            GameLogo(modifier = Modifier.padding(bottom = 24.dp))
+            GameLogo(modifier = Modifier.padding(bottom = 20.dp))
 
-            // Cloud Save Perks Card
+            // Cloud Save & Local Auto-Save Perks Card
             Card(
                 colors = CardDefaults.cardColors(containerColor = CardNavy),
                 shape = RoundedCornerShape(16.dp),
                 border = androidx.compose.foundation.BorderStroke(1.dp, SlateNavy),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .widthIn(max = 400.dp)
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
                     horizontalAlignment = Alignment.Start
                 ) {
                     Text(
-                        text = "CLOUD SAVE & PROGRESSION",
+                        text = "CLOUD BACKUP & AUTO-SAVE",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
                         color = QuestCyan,
@@ -113,40 +132,51 @@ fun AuthScreen(
 
                     BenefitRow(
                         icon = Icons.Default.CloudDone,
-                        text = "Backup your 20-level quest progress to Firestore"
+                        text = "Sync your 20-level quest progress to Cloud Firestore"
                     )
                     BenefitRow(
                         icon = Icons.Default.EmojiEvents,
-                        text = "Save and track your total score across devices"
+                        text = "Keep your high scores and hints backed up across devices"
                     )
                     BenefitRow(
                         icon = Icons.Default.Security,
-                        text = "Secure Google Sign-In with official Firebase Auth"
+                        text = "Automatic on-device save is always active even offline"
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
-            // Error display if any
+            // Error or status banner if sign-in was cancelled or encountered an issue
             errorMessage?.let { error ->
-                Text(
-                    text = error,
-                    fontSize = 12.sp,
-                    color = QuestRuby,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(bottom = 12.dp)
-                )
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = QuestRuby.copy(alpha = 0.15f)),
+                    shape = RoundedCornerShape(12.dp),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, QuestRuby.copy(alpha = 0.6f)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .widthIn(max = 400.dp)
+                        .padding(bottom = 14.dp)
+                ) {
+                    Text(
+                        text = error,
+                        fontSize = 12.sp,
+                        color = TextPrimary,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)
+                    )
+                }
             }
 
-            // Google Sign-In Button
+            // Primary Google Sign-In Button
             Button(
                 onClick = {
-                    if (activity != null) {
+                    val currentActivity = context.findActivity()
+                    if (currentActivity != null) {
                         isLoading = true
                         errorMessage = null
                         authManager.signInWithGoogle(
-                            activity = activity,
+                            activity = currentActivity,
                             scope = scope,
                             onSuccess = {
                                 isLoading = false
@@ -158,13 +188,17 @@ fun AuthScreen(
                             },
                             onCancelled = {
                                 isLoading = false
+                                errorMessage = "Google Sign-In was dismissed or not selected. Please choose a Google account to enable Cloud Sync, or tap 'Play Now (Auto-Save On Device)' below."
                             }
                         )
+                    } else {
+                        errorMessage = "Unable to launch account chooser right now. You can start playing immediately with on-device auto-save."
                     }
                 },
                 enabled = !isLoading,
                 modifier = Modifier
                     .fillMaxWidth()
+                    .widthIn(max = 400.dp)
                     .height(54.dp)
                     .shadow(8.dp, RoundedCornerShape(14.dp))
                     .testTag("sign_in_with_google_button"),
@@ -185,29 +219,57 @@ fun AuthScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
+                        Icon(
+                            imageVector = Icons.Default.AccountCircle,
+                            contentDescription = "Google Sign-In",
+                            modifier = Modifier.size(22.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = "Sign in with Google",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Black,
-                            letterSpacing = 1.sp
+                            letterSpacing = 0.5.sp
                         )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            // Optional Offline Play Button
-            TextButton(
+            // Prominent Local Auto-Save Play Button so players never lose save data even without cloud login
+            OutlinedButton(
                 onClick = onContinueOffline,
-                modifier = Modifier.testTag("continue_offline_button")
-            ) {
-                Text(
-                    text = "Continue as Guest (Local Offline)",
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = TextSecondary
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .widthIn(max = 400.dp)
+                    .height(50.dp)
+                    .testTag("continue_offline_button"),
+                shape = RoundedCornerShape(14.dp),
+                border = androidx.compose.foundation.BorderStroke(1.5.dp, QuestCyan.copy(alpha = 0.7f)),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    containerColor = CardNavy,
+                    contentColor = TextPrimary
                 )
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.PlayArrow,
+                        contentDescription = null,
+                        tint = QuestEmerald,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "Play Now (Auto-Save On Device)",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = QuestGoldLight
+                    )
+                }
             }
         }
 
