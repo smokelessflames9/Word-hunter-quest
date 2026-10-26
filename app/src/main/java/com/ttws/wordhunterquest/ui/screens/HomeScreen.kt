@@ -1,8 +1,6 @@
 package com.ttws.wordhunterquest.ui.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,12 +17,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -37,19 +37,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ttws.wordhunterquest.ui.components.BannerAdView
 import com.ttws.wordhunterquest.ui.components.GameLogo
+import com.ttws.wordhunterquest.ui.components.OnboardingTutorialDialog
+import com.ttws.wordhunterquest.ui.components.rateApp
+import com.ttws.wordhunterquest.ui.components.shareApp
 import com.ttws.wordhunterquest.ui.theme.CardNavy
 import com.ttws.wordhunterquest.ui.theme.MidnightBlue
-import com.ttws.wordhunterquest.ui.theme.QuestAmber
 import com.ttws.wordhunterquest.ui.theme.QuestCyan
+import com.ttws.wordhunterquest.ui.theme.QuestEmerald
 import com.ttws.wordhunterquest.ui.theme.QuestGold
 import com.ttws.wordhunterquest.ui.theme.QuestGoldLight
 import com.ttws.wordhunterquest.ui.theme.SlateNavy
@@ -63,8 +66,17 @@ fun HomeScreen(
     uiState: GameUiState,
     onNavigate: (Screen) -> Unit,
     onPlay: () -> Unit,
+    onShowTutorial: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+
+    if (uiState.showTutorialDialog) {
+        OnboardingTutorialDialog(
+            onDismiss = { onShowTutorial(false) }
+        )
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -78,15 +90,15 @@ fun HomeScreen(
                 .weight(1f)
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp, vertical = 20.dp),
+                .padding(horizontal = 24.dp, vertical = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(6.dp))
 
             // Game Logo
             GameLogo(
-                modifier = Modifier.padding(bottom = 20.dp)
+                modifier = Modifier.padding(bottom = 16.dp)
             )
 
             // Persistent Total Score Badge
@@ -158,7 +170,7 @@ fun HomeScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(28.dp))
+            Spacer(modifier = Modifier.height(22.dp))
 
             // PLAY Button (Hero button)
             Button(
@@ -166,7 +178,7 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .widthIn(max = 420.dp)
-                    .height(58.dp)
+                    .height(56.dp)
                     .shadow(10.dp, RoundedCornerShape(16.dp))
                     .testTag("play_button"),
                 colors = ButtonDefaults.buttonColors(
@@ -194,7 +206,7 @@ fun HomeScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             // LEVELS Button
             MenuButton(
@@ -205,7 +217,18 @@ fun HomeScreen(
                 onClick = { onNavigate(Screen.LEVEL_SELECT) }
             )
 
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // HOW TO PLAY (Onboarding Walkthrough) Button
+            MenuButton(
+                text = "HOW TO PLAY",
+                icon = Icons.AutoMirrored.Filled.HelpOutline,
+                accentColor = QuestEmerald,
+                testTag = "how_to_play_button",
+                onClick = { onShowTutorial(true) }
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
 
             // SETTINGS Button
             MenuButton(
@@ -216,7 +239,7 @@ fun HomeScreen(
                 onClick = { onNavigate(Screen.SETTINGS) }
             )
 
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             // ABOUT Button
             MenuButton(
@@ -227,7 +250,73 @@ fun HomeScreen(
                 onClick = { onNavigate(Screen.ABOUT) }
             )
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // SHARE APP & RATE APP Row
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .widthIn(max = 420.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                OutlinedButton(
+                    onClick = { shareApp(context) },
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(48.dp)
+                        .testTag("share_app_button"),
+                    shape = RoundedCornerShape(14.dp),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, QuestCyan.copy(alpha = 0.6f)),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        containerColor = CardNavy,
+                        contentColor = TextPrimary
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Share,
+                        contentDescription = "Share App",
+                        tint = QuestCyan,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "SHARE",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.sp
+                    )
+                }
+
+                OutlinedButton(
+                    onClick = { rateApp(context) },
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(48.dp)
+                        .testTag("rate_app_button"),
+                    shape = RoundedCornerShape(14.dp),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, QuestGold.copy(alpha = 0.6f)),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        containerColor = CardNavy,
+                        contentColor = TextPrimary
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = "Rate App",
+                        tint = QuestGold,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "RATE US",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.sp
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
         }
 
         // Real AdMob Banner Ad at bottom (never covers interactive controls)
@@ -248,7 +337,7 @@ private fun MenuButton(
         modifier = Modifier
             .fillMaxWidth()
             .widthIn(max = 420.dp)
-            .height(52.dp)
+            .height(50.dp)
             .testTag(testTag),
         colors = ButtonDefaults.buttonColors(
             containerColor = CardNavy,
@@ -271,7 +360,7 @@ private fun MenuButton(
             Spacer(modifier = Modifier.width(10.dp))
             Text(
                 text = text,
-                fontSize = 16.sp,
+                fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 1.5.sp
             )

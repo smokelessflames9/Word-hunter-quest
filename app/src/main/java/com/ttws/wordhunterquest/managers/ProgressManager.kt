@@ -18,6 +18,7 @@ class ProgressManager(context: Context) {
         private const val KEY_SOUND_ENABLED = "setting_sound_enabled"
         private const val KEY_VIBRATION_ENABLED = "setting_vibration_enabled"
         private const val KEY_COMPLETED_LEVELS_COUNT = "completed_count_for_ads"
+        private const val KEY_TUTORIAL_SEEN = "onboarding_tutorial_seen"
     }
 
     fun getHighestUnlockedLevel(): Int {
@@ -116,6 +117,14 @@ class ProgressManager(context: Context) {
 
     fun setVibrationEnabled(enabled: Boolean) {
         prefs.edit().putBoolean(KEY_VIBRATION_ENABLED, enabled).apply()
+    }
+
+    fun isTutorialSeen(): Boolean {
+        return prefs.getBoolean(KEY_TUTORIAL_SEEN, false)
+    }
+
+    fun setTutorialSeen(seen: Boolean) {
+        prefs.edit().putBoolean(KEY_TUTORIAL_SEEN, seen).apply()
     }
 
     fun resetAllProgress() {

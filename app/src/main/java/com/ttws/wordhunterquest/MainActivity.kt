@@ -62,7 +62,8 @@ class MainActivity : ComponentActivity() {
                                 onPlay = {
                                     // Start highest unlocked level
                                     viewModel.startLevel(uiState.highestUnlockedLevel)
-                                }
+                                },
+                                onShowTutorial = { viewModel.setShowTutorial(it) }
                             )
                         }
                         Screen.LEVEL_SELECT -> {

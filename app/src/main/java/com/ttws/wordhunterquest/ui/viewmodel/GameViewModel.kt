@@ -54,7 +54,8 @@ data class GameUiState(
     val showResetConfirmationDialog: Boolean = false,
     val isSignedIn: Boolean = false,
     val userDisplayName: String? = null,
-    val userEmail: String? = null
+    val userEmail: String? = null,
+    val showTutorialDialog: Boolean = false
 )
 
 class GameViewModel(application: Application) : AndroidViewModel(application) {
@@ -84,8 +85,17 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             highestUnlockedLevel = progressManager.getHighestUnlockedLevel(),
             completedLevels = completed,
             soundEnabled = progressManager.isSoundEnabled(),
-            vibrationEnabled = progressManager.isVibrationEnabled()
+            vibrationEnabled = progressManager.isVibrationEnabled(),
+            showTutorialDialog = !progressManager.isTutorialSeen()
         )
+    }
+
+    fun setShowTutorial(show: Boolean) {
+        soundManager.playSound(SoundManager.SoundType.BUTTON_CLICK)
+        if (!show) {
+            progressManager.setTutorialSeen(true)
+        }
+        _uiState.value = _uiState.value.copy(showTutorialDialog = show)
     }
 
     private fun observeAuthState() {

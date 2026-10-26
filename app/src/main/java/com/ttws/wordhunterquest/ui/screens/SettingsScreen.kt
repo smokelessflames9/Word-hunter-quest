@@ -20,11 +20,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LockReset
 import androidx.compose.material.icons.filled.PrivacyTip
-import androidx.compose.material.icons.filled.VolumeUp
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Vibration
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -47,11 +49,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ttws.wordhunterquest.ui.components.BannerAdView
+import com.ttws.wordhunterquest.ui.components.OnboardingTutorialDialog
+import com.ttws.wordhunterquest.ui.components.rateApp
+import com.ttws.wordhunterquest.ui.components.shareApp
 import com.ttws.wordhunterquest.ui.theme.CardNavy
 import com.ttws.wordhunterquest.ui.theme.DeepNavy
 import com.ttws.wordhunterquest.ui.theme.MidnightBlue
@@ -81,8 +87,14 @@ fun SettingsScreen(
     modifier: Modifier = Modifier
 ) {
     BackHandler { onBack() }
+    val context = LocalContext.current
     var showPrivacyPolicyDialog by remember { mutableStateOf(false) }
     var showDeleteAccountDialog by remember { mutableStateOf(false) }
+    var showTutorialModal by remember { mutableStateOf(false) }
+
+    if (showTutorialModal) {
+        OnboardingTutorialDialog(onDismiss = { showTutorialModal = false })
+    }
 
     Column(
         modifier = modifier
@@ -337,6 +349,39 @@ fun SettingsScreen(
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
+
+                    // How to Play Tutorial
+                    SettingActionRow(
+                        title = "How to Play Tutorial",
+                        subtitle = "Interactive walkthrough of game rules & hints",
+                        icon = Icons.AutoMirrored.Filled.HelpOutline,
+                        onClick = { showTutorialModal = true },
+                        testTag = "settings_tutorial_button"
+                    )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // Share App
+                    SettingActionRow(
+                        title = "Share App",
+                        subtitle = "Invite friends to play Word Hunter Quest",
+                        icon = Icons.Default.Share,
+                        onClick = { shareApp(context) },
+                        testTag = "settings_share_button"
+                    )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // Rate App
+                    SettingActionRow(
+                        title = "Rate Your App",
+                        subtitle = "Leave a review on the Google Play Store",
+                        icon = Icons.Default.Star,
+                        onClick = { rateApp(context) },
+                        testTag = "settings_rate_button"
+                    )
+
+                    Spacer(modifier = Modifier.height(10.dp))
 
                     // Privacy Policy
                     SettingActionRow(
