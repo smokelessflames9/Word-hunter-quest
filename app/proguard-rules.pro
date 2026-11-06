@@ -1,21 +1,16 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# Add project specific ProGuard / R8 rules here.
+# Preserve line number information for Play Console crash & ANR deobfuscation
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile
+-keepattributes Signature,InnerClasses,EnclosingMethod,*Annotation*
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Keep Firestore data models (required for reflection-based Snapshot.toObject deserialization)
+-keep class com.ttws.wordhunterquest.data.firestore.** { *; }
+-keepnames class com.ttws.wordhunterquest.data.firestore.** { *; }
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# Keep game data models
+-keep class com.ttws.wordhunterquest.data.** { *; }
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Keep Google Mobile Ads & Firebase Auth/Credential Manager classes
+-keep class com.google.android.gms.ads.** { *; }
+-dontwarn com.google.errorprone.annotations.**
