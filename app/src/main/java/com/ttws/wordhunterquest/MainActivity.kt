@@ -5,15 +5,17 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import com.ttws.wordhunterquest.ads.AdMobManager
+import com.ttws.wordhunterquest.ui.components.ProvideResponsiveMetrics
 import com.ttws.wordhunterquest.ui.screens.AboutScreen
 import com.ttws.wordhunterquest.ui.screens.AuthScreen
 import com.ttws.wordhunterquest.ui.screens.GameScreen
@@ -33,7 +35,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        // Safely initialize AdMob SDK on startup (fails gracefully if offline)
+        // Safely initialize AdMob SDK on startup (fails gracefully if offline or on Fire TV/Fire OS)
         AdMobManager.initialize(this)
 
         setContent {
@@ -41,13 +43,13 @@ class MainActivity : ComponentActivity() {
                 Surface(
                     modifier = Modifier
                         .fillMaxSize()
-                        .statusBarsPadding()
-                        .navigationBarsPadding(),
+                        .windowInsetsPadding(WindowInsets.safeDrawing),
                     color = MidnightBlue
                 ) {
-                    val uiState by viewModel.uiState.collectAsState()
+                    ProvideResponsiveMetrics {
+                        val uiState by viewModel.uiState.collectAsState()
 
-                    when (uiState.currentScreen) {
+                        when (uiState.currentScreen) {
                         Screen.AUTH -> {
                             AuthScreen(
                                 authManager = viewModel.authManager,
@@ -111,6 +113,7 @@ class MainActivity : ComponentActivity() {
                                 onBack = { viewModel.navigateTo(Screen.HOME) }
                             )
                         }
+                    }
                     }
                 }
             }

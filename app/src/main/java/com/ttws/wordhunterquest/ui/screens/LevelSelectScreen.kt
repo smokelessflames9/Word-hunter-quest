@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -27,7 +28,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -37,15 +37,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ttws.wordhunterquest.data.LevelRepository
 import com.ttws.wordhunterquest.ui.components.BannerAdView
+import com.ttws.wordhunterquest.ui.components.LocalResponsiveMetrics
+import com.ttws.wordhunterquest.ui.components.tvFocusBorder
 import com.ttws.wordhunterquest.ui.theme.CardNavy
 import com.ttws.wordhunterquest.ui.theme.GridCellBorder
 import com.ttws.wordhunterquest.ui.theme.MidnightBlue
@@ -53,7 +54,6 @@ import com.ttws.wordhunterquest.ui.theme.QuestCyan
 import com.ttws.wordhunterquest.ui.theme.QuestEmerald
 import com.ttws.wordhunterquest.ui.theme.QuestGold
 import com.ttws.wordhunterquest.ui.theme.QuestGoldLight
-import com.ttws.wordhunterquest.ui.theme.SlateNavy
 import com.ttws.wordhunterquest.ui.theme.TextMuted
 import com.ttws.wordhunterquest.ui.theme.TextPrimary
 import com.ttws.wordhunterquest.ui.theme.TextSecondary
@@ -69,24 +69,37 @@ fun LevelSelectScreen(
     BackHandler { onBack() }
 
     val levels = LevelRepository.getAllLevels()
+    val metrics = LocalResponsiveMetrics.current
+
+    // Adaptive column count: 3 on ultra-narrow, 4 on phones, 5 on tablets/landscape/Fire TV (exact 5x4 for 20 levels)
+    val columns = when {
+        metrics.maxWidth < 340.dp -> 3
+        metrics.maxWidth < 600.dp -> 4
+        else -> 5
+    }
+    val cardAspectRatio = if (metrics.useTwoPaneLayout || metrics.isLandscape) 1.25f else 0.92f
 
     Column(
         modifier = modifier
             .fillMaxSize()
             .background(MidnightBlue)
-            .testTag("level_select_screen")
+            .testTag("level_select_screen"),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Header Bar
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+                .widthIn(max = 1040.dp)
+                .padding(horizontal = 16.dp, vertical = if (metrics.isCompactHeight) 6.dp else 12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             IconButton(
                 onClick = onBack,
-                modifier = Modifier.testTag("back_button")
+                modifier = Modifier
+                    .tvFocusBorder(CircleShape)
+                    .testTag("back_button")
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -100,10 +113,11 @@ fun LevelSelectScreen(
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Black,
                 letterSpacing = 2.sp,
-                color = QuestGoldLight
+                color = QuestGoldLight,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
 
-            // Persistent Total Score Counter Badge
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
@@ -128,10 +142,11 @@ fun LevelSelectScreen(
             }
         }
 
-        // Subtitle & difficulty legend
+        // Subtitle & progress summary
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .widthIn(max = 1040.dp)
                 .padding(horizontal = 20.dp, vertical = 4.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -150,14 +165,15 @@ fun LevelSelectScreen(
             )
         }
 
-        // 4 Columns Grid (5 rows of 4 or 5 columns) -> 4 columns gives large, touch-friendly cells
+        // Adaptive Responsive Level Grid
         LazyVerticalGrid(
-            columns = GridCells.Fixed(4),
+            columns = GridCells.Fixed(columns),
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
+                .widthIn(max = 1040.dp)
                 .padding(horizontal = 16.dp),
-            contentPadding = PaddingValues(vertical = 12.dp),
+            contentPadding = PaddingValues(vertical = 10.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
@@ -173,6 +189,7 @@ fun LevelSelectScreen(
                     isUnlocked = isUnlocked,
                     isCompleted = isCompleted,
                     isCurrent = isCurrent,
+                    aspectRatio = cardAspectRatio,
                     onClick = {
                         if (isUnlocked) {
                             onLevelSelected(level.id)
@@ -182,8 +199,9 @@ fun LevelSelectScreen(
             }
         }
 
-        // Banner Ad
-        BannerAdView(modifier = Modifier.padding(bottom = 6.dp))
+        if (!metrics.isCompactHeight && !metrics.isTv) {
+            BannerAdView(modifier = Modifier.padding(bottom = 6.dp))
+        }
     }
 }
 
@@ -195,6 +213,7 @@ private fun LevelGridItem(
     isUnlocked: Boolean,
     isCompleted: Boolean,
     isCurrent: Boolean,
+    aspectRatio: Float,
     onClick: () -> Unit
 ) {
     val borderColor = when {
@@ -205,26 +224,27 @@ private fun LevelGridItem(
     }
 
     val backgroundColor = when {
-        isCompleted -> CardNavy
-        isCurrent -> CardNavy
         isUnlocked -> CardNavy
         else -> MidnightBlue.copy(alpha = 0.6f)
     }
 
+    val cardShape = RoundedCornerShape(16.dp)
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(0.9f)
-            .clip(RoundedCornerShape(16.dp))
+            .aspectRatio(aspectRatio)
+            .clip(cardShape)
             .border(
                 width = if (isCurrent || isCompleted) 2.dp else 1.dp,
                 color = borderColor,
-                shape = RoundedCornerShape(16.dp)
+                shape = cardShape
             )
+            .tvFocusBorder(cardShape)
             .clickable(enabled = isUnlocked) { onClick() }
             .testTag("level_item_$levelNumber"),
         colors = CardDefaults.cardColors(containerColor = backgroundColor),
-        shape = RoundedCornerShape(16.dp)
+        shape = cardShape
     ) {
         Box(
             modifier = Modifier.fillMaxSize(),
@@ -233,34 +253,33 @@ private fun LevelGridItem(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(8.dp),
+                    .padding(6.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
                 if (isUnlocked) {
-                    // Level Number
                     Text(
                         text = "$levelNumber",
-                        fontSize = 24.sp,
+                        fontSize = 22.sp,
                         fontWeight = FontWeight.Black,
-                        color = if (isCompleted) QuestEmerald else if (isCurrent) QuestGold else TextPrimary
+                        color = if (isCompleted) QuestEmerald else if (isCurrent) QuestGold else TextPrimary,
+                        maxLines = 1
                     )
 
                     Spacer(modifier = Modifier.height(2.dp))
 
-                    // Category
                     Text(
                         text = category,
-                        fontSize = 9.sp,
+                        fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
                         color = TextSecondary,
                         textAlign = TextAlign.Center,
-                        maxLines = 1
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
 
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(3.dp))
 
-                    // Status Badge (Star / Check)
                     if (isCompleted) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
@@ -274,7 +293,8 @@ private fun LevelGridItem(
                                 text = "DONE",
                                 fontSize = 9.sp,
                                 fontWeight = FontWeight.ExtraBold,
-                                color = QuestEmerald
+                                color = QuestEmerald,
+                                maxLines = 1
                             )
                         }
                     } else if (isCurrent) {
@@ -282,30 +302,33 @@ private fun LevelGridItem(
                             text = "PLAY",
                             fontSize = 9.sp,
                             fontWeight = FontWeight.ExtraBold,
-                            color = QuestGold
+                            color = QuestGold,
+                            maxLines = 1
                         )
                     } else {
                         Text(
                             text = difficulty,
-                            fontSize = 8.sp,
+                            fontSize = 9.sp,
                             fontWeight = FontWeight.Normal,
-                            color = TextMuted
+                            color = TextMuted,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                 } else {
-                    // Locked Level
                     Icon(
                         imageVector = Icons.Default.Lock,
                         contentDescription = "Locked Level $levelNumber",
                         tint = TextMuted,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(22.dp)
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(3.dp))
                     Text(
                         text = "$levelNumber",
-                        fontSize = 14.sp,
+                        fontSize = 13.sp,
                         fontWeight = FontWeight.Bold,
-                        color = TextMuted
+                        color = TextMuted,
+                        maxLines = 1
                     )
                 }
             }

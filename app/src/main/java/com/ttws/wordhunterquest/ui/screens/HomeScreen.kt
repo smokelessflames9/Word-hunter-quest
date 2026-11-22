@@ -1,11 +1,13 @@
 package com.ttws.wordhunterquest.ui.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -42,13 +44,16 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ttws.wordhunterquest.ui.components.BannerAdView
 import com.ttws.wordhunterquest.ui.components.GameLogo
+import com.ttws.wordhunterquest.ui.components.LocalResponsiveMetrics
 import com.ttws.wordhunterquest.ui.components.OnboardingTutorialDialog
 import com.ttws.wordhunterquest.ui.components.rateApp
 import com.ttws.wordhunterquest.ui.components.shareApp
+import com.ttws.wordhunterquest.ui.components.tvFocusBorder
 import com.ttws.wordhunterquest.ui.theme.CardNavy
 import com.ttws.wordhunterquest.ui.theme.MidnightBlue
 import com.ttws.wordhunterquest.ui.theme.QuestCyan
@@ -70,6 +75,7 @@ fun HomeScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val metrics = LocalResponsiveMetrics.current
 
     if (uiState.showTutorialDialog) {
         OnboardingTutorialDialog(
@@ -84,243 +90,329 @@ fun HomeScreen(
             .testTag("home_screen"),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Main scrollable content
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp, vertical = 16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Spacer(modifier = Modifier.height(6.dp))
-
-            // Game Logo
-            GameLogo(
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-
-            // Persistent Total Score Badge
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .widthIn(max = 420.dp)
-                    .testTag("persistent_score_card"),
-                colors = CardDefaults.cardColors(containerColor = CardNavy),
-                shape = RoundedCornerShape(16.dp),
-                border = androidx.compose.foundation.BorderStroke(1.5.dp, QuestGold.copy(alpha = 0.6f))
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp, vertical = 14.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(QuestGold.copy(alpha = 0.2f)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.EmojiEvents,
-                                contentDescription = "Trophy Icon",
-                                tint = QuestGold,
-                                modifier = Modifier.size(24.dp)
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column {
-                            Text(
-                                text = "TOTAL SCORE",
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = TextSecondary,
-                                letterSpacing = 1.sp
-                            )
-                            Text(
-                                text = "${uiState.persistentTotalScore} PTS",
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.Black,
-                                color = QuestGoldLight
-                            )
-                        }
-                    }
-
-                    // Levels Completed counter
-                    Column(horizontalAlignment = Alignment.End) {
-                        Text(
-                            text = "PROGRESS",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = TextSecondary,
-                            letterSpacing = 1.sp
-                        )
-                        Text(
-                            text = "${uiState.completedLevels.size} / 20",
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = QuestCyan
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(22.dp))
-
-            // PLAY Button (Hero button)
-            Button(
-                onClick = onPlay,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .widthIn(max = 420.dp)
-                    .height(56.dp)
-                    .shadow(10.dp, RoundedCornerShape(16.dp))
-                    .testTag("play_button"),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = QuestGold,
-                    contentColor = Color.Black
-                ),
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.PlayArrow,
-                        contentDescription = "Play Icon",
-                        modifier = Modifier.size(28.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "PLAY",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = 2.sp
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // LEVELS Button
-            MenuButton(
-                text = "LEVELS",
-                icon = Icons.AutoMirrored.Filled.List,
-                accentColor = QuestCyan,
-                testTag = "levels_button",
-                onClick = { onNavigate(Screen.LEVEL_SELECT) }
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // HOW TO PLAY (Onboarding Walkthrough) Button
-            MenuButton(
-                text = "HOW TO PLAY",
-                icon = Icons.AutoMirrored.Filled.HelpOutline,
-                accentColor = QuestEmerald,
-                testTag = "how_to_play_button",
-                onClick = { onShowTutorial(true) }
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // SETTINGS Button
-            MenuButton(
-                text = "SETTINGS",
-                icon = Icons.Default.Settings,
-                accentColor = SlateNavy,
-                testTag = "settings_button",
-                onClick = { onNavigate(Screen.SETTINGS) }
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // ABOUT Button
-            MenuButton(
-                text = "ABOUT",
-                icon = Icons.Default.Info,
-                accentColor = SlateNavy,
-                testTag = "about_button",
-                onClick = { onNavigate(Screen.ABOUT) }
-            )
-
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // SHARE APP & RATE APP Row
+        if (metrics.useTwoPaneLayout) {
+            // Two-Pane Hero Layout for Landscape Phones, Fire Tablets, Android Tablets, and Fire TV
             Row(
                 modifier = Modifier
+                    .weight(1f)
                     .fillMaxWidth()
-                    .widthIn(max = 420.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    .widthIn(max = 1100.dp)
+                    .padding(
+                        horizontal = if (metrics.isTabletOrLarger) 32.dp else 20.dp,
+                        vertical = if (metrics.isCompactHeight) 8.dp else 16.dp
+                    ),
+                horizontalArrangement = Arrangement.spacedBy(if (metrics.isTabletOrLarger) 36.dp else 20.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                OutlinedButton(
-                    onClick = { shareApp(context) },
+                // Left Pane: Game Logo & Persistent Progress Summary
+                Column(
                     modifier = Modifier
                         .weight(1f)
-                        .height(48.dp)
-                        .testTag("share_app_button"),
-                    shape = RoundedCornerShape(14.dp),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, QuestCyan.copy(alpha = 0.6f)),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        containerColor = CardNavy,
-                        contentColor = TextPrimary
-                    )
+                        .fillMaxHeight()
+                        .verticalScroll(rememberScrollState()),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Share,
-                        contentDescription = "Share App",
-                        tint = QuestCyan,
-                        modifier = Modifier.size(18.dp)
+                    GameLogo(
+                        compact = metrics.isCompactHeight,
+                        modifier = Modifier.padding(bottom = if (metrics.isCompactHeight) 10.dp else 18.dp)
                     )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = "SHARE",
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.sp
-                    )
+                    PersistentScoreCard(uiState = uiState)
                 }
 
-                OutlinedButton(
-                    onClick = { rateApp(context) },
+                // Right Pane: Action Menu Buttons
+                Column(
                     modifier = Modifier
                         .weight(1f)
-                        .height(48.dp)
-                        .testTag("rate_app_button"),
-                    shape = RoundedCornerShape(14.dp),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, QuestGold.copy(alpha = 0.6f)),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        containerColor = CardNavy,
-                        contentColor = TextPrimary
+                        .fillMaxHeight()
+                        .verticalScroll(rememberScrollState()),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    HomeActionMenu(
+                        onPlay = onPlay,
+                        onNavigate = onNavigate,
+                        onShowTutorial = onShowTutorial,
+                        onShare = { shareApp(context) },
+                        onRate = { rateApp(context) },
+                        compact = metrics.isCompactHeight,
+                        showSocialRow = !metrics.isTv
                     )
+                }
+            }
+        } else {
+            // Single-Pane Layout for Portrait Phones and Narrow Windows
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 24.dp, vertical = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Spacer(modifier = Modifier.height(6.dp))
+
+                GameLogo(modifier = Modifier.padding(bottom = 16.dp))
+
+                PersistentScoreCard(uiState = uiState)
+
+                Spacer(modifier = Modifier.height(22.dp))
+
+                HomeActionMenu(
+                    onPlay = onPlay,
+                    onNavigate = onNavigate,
+                    onShowTutorial = onShowTutorial,
+                    onShare = { shareApp(context) },
+                    onRate = { rateApp(context) },
+                    compact = false,
+                    showSocialRow = !metrics.isTv
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+        }
+
+        if (!metrics.isCompactHeight && !metrics.isTv) {
+            BannerAdView(modifier = Modifier.padding(bottom = 6.dp))
+        }
+    }
+}
+
+@Composable
+private fun PersistentScoreCard(
+    uiState: GameUiState
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .widthIn(max = 420.dp)
+            .testTag("persistent_score_card"),
+        colors = CardDefaults.cardColors(containerColor = CardNavy),
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.5.dp, QuestGold.copy(alpha = 0.6f))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(QuestGold.copy(alpha = 0.2f)),
+                    contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Star,
-                        contentDescription = "Rate App",
+                        imageVector = Icons.Default.EmojiEvents,
+                        contentDescription = "Trophy Icon",
                         tint = QuestGold,
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier.size(24.dp)
                     )
-                    Spacer(modifier = Modifier.width(6.dp))
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Column {
                     Text(
-                        text = "RATE US",
-                        fontSize = 13.sp,
+                        text = "TOTAL SCORE",
+                        fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
+                        color = TextSecondary,
                         letterSpacing = 1.sp
+                    )
+                    Text(
+                        text = "${uiState.persistentTotalScore} PTS",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Black,
+                        color = QuestGoldLight
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    text = "PROGRESS",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = TextSecondary,
+                    letterSpacing = 1.sp
+                )
+                Text(
+                    text = "${uiState.completedLevels.size} / 20",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = QuestCyan
+                )
+            }
         }
+    }
+}
 
-        // Real AdMob Banner Ad at bottom (never covers interactive controls)
-        BannerAdView(modifier = Modifier.padding(bottom = 6.dp))
+@Composable
+private fun HomeActionMenu(
+    onPlay: () -> Unit,
+    onNavigate: (Screen) -> Unit,
+    onShowTutorial: (Boolean) -> Unit,
+    onShare: () -> Unit,
+    onRate: () -> Unit,
+    compact: Boolean,
+    showSocialRow: Boolean
+) {
+    val itemSpacing = if (compact) 8.dp else 12.dp
+    val buttonHeight = if (compact) 48.dp else 50.dp
+
+    Button(
+        onClick = onPlay,
+        modifier = Modifier
+            .fillMaxWidth()
+            .widthIn(max = 420.dp)
+            .height(if (compact) 50.dp else 56.dp)
+            .shadow(10.dp, RoundedCornerShape(16.dp))
+            .tvFocusBorder(RoundedCornerShape(16.dp))
+            .testTag("play_button"),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = QuestGold,
+            contentColor = Color.Black
+        ),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.PlayArrow,
+                contentDescription = "Play Icon",
+                modifier = Modifier.size(28.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "PLAY",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Black,
+                letterSpacing = 2.sp
+            )
+        }
+    }
+
+    Spacer(modifier = Modifier.height(itemSpacing))
+
+    MenuButton(
+        text = "LEVELS",
+        icon = Icons.AutoMirrored.Filled.List,
+        accentColor = QuestCyan,
+        testTag = "levels_button",
+        height = buttonHeight,
+        onClick = { onNavigate(Screen.LEVEL_SELECT) }
+    )
+
+    Spacer(modifier = Modifier.height(itemSpacing))
+
+    MenuButton(
+        text = "HOW TO PLAY",
+        icon = Icons.AutoMirrored.Filled.HelpOutline,
+        accentColor = QuestEmerald,
+        testTag = "how_to_play_button",
+        height = buttonHeight,
+        onClick = { onShowTutorial(true) }
+    )
+
+    Spacer(modifier = Modifier.height(itemSpacing))
+
+    MenuButton(
+        text = "SETTINGS",
+        icon = Icons.Default.Settings,
+        accentColor = SlateNavy,
+        testTag = "settings_button",
+        height = buttonHeight,
+        onClick = { onNavigate(Screen.SETTINGS) }
+    )
+
+    Spacer(modifier = Modifier.height(itemSpacing))
+
+    MenuButton(
+        text = "ABOUT",
+        icon = Icons.Default.Info,
+        accentColor = SlateNavy,
+        testTag = "about_button",
+        height = buttonHeight,
+        onClick = { onNavigate(Screen.ABOUT) }
+    )
+
+    if (showSocialRow) {
+        Spacer(modifier = Modifier.height(itemSpacing + 2.dp))
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .widthIn(max = 420.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            OutlinedButton(
+                onClick = onShare,
+                modifier = Modifier
+                    .weight(1f)
+                    .height(48.dp)
+                    .tvFocusBorder(RoundedCornerShape(14.dp))
+                    .testTag("share_app_button"),
+                shape = RoundedCornerShape(14.dp),
+                border = BorderStroke(1.dp, QuestCyan.copy(alpha = 0.6f)),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    containerColor = CardNavy,
+                    contentColor = TextPrimary
+                )
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Share,
+                    contentDescription = "Share App",
+                    tint = QuestCyan,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = "SHARE",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+
+            OutlinedButton(
+                onClick = onRate,
+                modifier = Modifier
+                    .weight(1f)
+                    .height(48.dp)
+                    .tvFocusBorder(RoundedCornerShape(14.dp))
+                    .testTag("rate_app_button"),
+                shape = RoundedCornerShape(14.dp),
+                border = BorderStroke(1.dp, QuestGold.copy(alpha = 0.6f)),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    containerColor = CardNavy,
+                    contentColor = TextPrimary
+                )
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Star,
+                    contentDescription = "Rate App",
+                    tint = QuestGold,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = "RATE US",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
     }
 }
 
@@ -330,6 +422,7 @@ private fun MenuButton(
     icon: ImageVector,
     accentColor: Color,
     testTag: String,
+    height: androidx.compose.ui.unit.Dp = 50.dp,
     onClick: () -> Unit
 ) {
     Button(
@@ -337,14 +430,15 @@ private fun MenuButton(
         modifier = Modifier
             .fillMaxWidth()
             .widthIn(max = 420.dp)
-            .height(50.dp)
+            .height(height)
+            .tvFocusBorder(RoundedCornerShape(14.dp))
             .testTag(testTag),
         colors = ButtonDefaults.buttonColors(
             containerColor = CardNavy,
             contentColor = TextPrimary
         ),
         shape = RoundedCornerShape(14.dp),
-        border = androidx.compose.foundation.BorderStroke(1.dp, SlateNavy)
+        border = BorderStroke(1.dp, SlateNavy)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -362,7 +456,9 @@ private fun MenuButton(
                 text = text,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
-                letterSpacing = 1.5.sp
+                letterSpacing = 1.5.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
         }
     }

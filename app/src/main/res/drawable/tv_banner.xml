@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="320dp"
+    android:height="180dp"
+    android:viewportWidth="320"
+    android:viewportHeight="180">
+
+    <!-- Deep Midnight Blue Background -->
+    <path
+        android:fillColor="#0B1221"
+        android:pathData="M0,0h320v180h-320z" />
+
+    <!-- Subtle Decorative Card Frame -->
+    <path
+        android:fillColor="#162238"
+        android:strokeColor="#F5B82E"
+        android:strokeWidth="3"
+        android:pathData="M18,16 L302,16 Q306,16 306,20 L306,160 Q306,164 302,164 L18,164 Q14,164 14,160 L14,20 Q14,16 18,16 Z" />
+
+    <!-- Accent Diagonal Glow Strip -->
+    <path
+        android:fillColor="#1E304F"
+        android:pathData="M14,120 L306,80 L306,160 Q306,164 302,164 L18,164 Q14,164 14,160 Z" />
+
+    <!-- Left Puzzle Emblem Tile -->
+    <path
+        android:fillColor="#0F1A2E"
+        android:strokeColor="#F5B82E"
+        android:strokeWidth="2.5"
+        android:pathData="M42,42 L114,42 Q122,42 122,50 L122,122 Q122,130 114,130 L42,130 Q34,130 34,122 L34,50 Q34,42 42,42 Z" />
+
+    <!-- Stylized Letter 'W' inside Tile -->
+    <path
+        android:fillColor="#F5B82E"
+        android:pathData="M49,62 L58,62 L66,97 L75,68 L82,68 L91,97 L99,62 L108,62 L96,110 L87,110 L78.5,82 L70,110 L61,110 Z" />
+
+    <!-- Magnifying Glass Ring Accent (Cyan) -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#22D3EE"
+        android:strokeWidth="4"
+        android:pathData="M114,114 m-12,0 a12,12 0 1,0 24,0 a12,12 0 1,0 -24,0" />
+    <path
+        android:strokeColor="#22D3EE"
+        android:strokeWidth="4.5"
+        android:strokeLineCap="round"
+        android:pathData="M123,123 L134,134" />
+
+    <!-- Right-side stylized horizontal bars representing title emblem (WORD HUNTER QUEST) -->
+    <!-- Gold Banner Bar -->
+    <path
+        android:fillColor="#F5B82E"
+        android:pathData="M148,54 L276,54 Q282,54 282,60 L282,74 Q282,80 276,80 L148,80 Q142,80 142,74 L142,60 Q142,54 148,54 Z" />
+    <!-- Cyan Accent Bar -->
+    <path
+        android:fillColor="#22D3EE"
+        android:pathData="M148,90 L256,90 Q262,90 262,96 L262,108 Q262,114 256,114 L148,114 Q142,114 142,108 L142,96 Q142,90 148,90 Z" />
+    <!-- Emerald Quest Pill -->
+    <path
+        android:fillColor="#10B981"
+        android:pathData="M148,124 L222,124 Q227,124 227,129 L227,137 Q227,142 222,142 L148,142 Q143,142 143,137 L143,129 Q143,124 148,124 Z" />
+
+    <!-- Decorative Star Sparkles -->
+    <path
+        android:fillColor="#FDE047"
+        android:pathData="M275,112 L278,120 L286,123 L278,126 L275,134 L272,126 L264,123 L272,120 Z" />
+</vector>

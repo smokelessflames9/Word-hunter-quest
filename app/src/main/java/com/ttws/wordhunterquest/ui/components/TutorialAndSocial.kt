@@ -17,8 +17,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CloudDone
 import androidx.compose.material.icons.filled.EmojiEvents
@@ -58,11 +61,15 @@ import com.ttws.wordhunterquest.ui.theme.TextPrimary
 import com.ttws.wordhunterquest.ui.theme.TextSecondary
 
 /**
- * Launches the system Share Sheet with the app's Google Play Store URL.
+ * Launches the system Share Sheet with the app's store URL (Amazon Appstore on Fire devices, Google Play otherwise).
  */
 fun shareApp(context: Context) {
-    val playStoreUrl = "https://play.google.com/store/apps/details?id=${context.packageName}"
-    val shareMessage = "Play WORD HUNTER QUEST! Search and discover hidden words across 20 themed puzzle levels:\n$playStoreUrl"
+    val storeUrl = if (isAmazonFireDevice()) {
+        "https://www.amazon.com/gp/mas/dl/android?p=${context.packageName}"
+    } else {
+        "https://play.google.com/store/apps/details?id=${context.packageName}"
+    }
+    val shareMessage = "Play WORD HUNTER QUEST! Search and discover hidden words across 20 themed puzzle levels:\n$storeUrl"
     val sendIntent = Intent(Intent.ACTION_SEND).apply {
         type = "text/plain"
         putExtra(Intent.EXTRA_SUBJECT, "WORD HUNTER QUEST")
@@ -77,29 +84,35 @@ fun shareApp(context: Context) {
 }
 
 /**
- * Opens the app's Google Play Store listing for rating/reviewing, with browser fallback.
+ * Opens the app's store listing for rating/reviewing:
+ * uses Amazon Appstore deep link on Amazon Fire devices, and Google Play Store on Android devices.
  */
 fun rateApp(context: Context) {
     val packageName = context.packageName
-    val marketIntent = Intent(
-        Intent.ACTION_VIEW,
+    val primaryUri = if (isAmazonFireDevice()) {
+        Uri.parse("amzn://apps/android?p=$packageName")
+    } else {
         Uri.parse("market://details?id=$packageName")
-    ).apply {
+    }
+    val fallbackWebUri = if (isAmazonFireDevice()) {
+        Uri.parse("https://www.amazon.com/gp/mas/dl/android?p=$packageName")
+    } else {
+        Uri.parse("https://play.google.com/store/apps/details?id=$packageName")
+    }
+
+    val storeIntent = Intent(Intent.ACTION_VIEW, primaryUri).apply {
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     }
     try {
-        context.startActivity(marketIntent)
+        context.startActivity(storeIntent)
     } catch (_: ActivityNotFoundException) {
-        val webIntent = Intent(
-            Intent.ACTION_VIEW,
-            Uri.parse("https://play.google.com/store/apps/details?id=$packageName")
-        ).apply {
+        val webIntent = Intent(Intent.ACTION_VIEW, fallbackWebUri).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
         try {
             context.startActivity(webIntent)
         } catch (_: Exception) {}
-    }
+    } catch (_: Exception) {}
 }
 
 /**
@@ -119,11 +132,13 @@ fun OnboardingTutorialDialog(
             border = androidx.compose.foundation.BorderStroke(1.5.dp, QuestGold.copy(alpha = 0.7f)),
             modifier = Modifier
                 .fillMaxWidth()
+                .widthIn(max = 500.dp)
                 .testTag("onboarding_tutorial_dialog")
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
                     .padding(20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {

@@ -15,7 +15,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -55,9 +57,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ttws.wordhunterquest.ui.components.BannerAdView
+import com.ttws.wordhunterquest.ui.components.LocalResponsiveMetrics
 import com.ttws.wordhunterquest.ui.components.OnboardingTutorialDialog
 import com.ttws.wordhunterquest.ui.components.rateApp
 import com.ttws.wordhunterquest.ui.components.shareApp
+import com.ttws.wordhunterquest.ui.components.tvFocusBorder
 import com.ttws.wordhunterquest.ui.theme.CardNavy
 import com.ttws.wordhunterquest.ui.theme.DeepNavy
 import com.ttws.wordhunterquest.ui.theme.MidnightBlue
@@ -88,6 +92,7 @@ fun SettingsScreen(
 ) {
     BackHandler { onBack() }
     val context = LocalContext.current
+    val metrics = LocalResponsiveMetrics.current
     var showPrivacyPolicyDialog by remember { mutableStateOf(false) }
     var showDeleteAccountDialog by remember { mutableStateOf(false) }
     var showTutorialModal by remember { mutableStateOf(false) }
@@ -100,18 +105,22 @@ fun SettingsScreen(
         modifier = modifier
             .fillMaxSize()
             .background(MidnightBlue)
-            .testTag("settings_screen")
+            .testTag("settings_screen"),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Top Header
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+                .widthIn(max = 760.dp)
+                .padding(horizontal = 16.dp, vertical = if (metrics.isCompactHeight) 6.dp else 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(
                 onClick = onBack,
-                modifier = Modifier.testTag("settings_back_button")
+                modifier = Modifier
+                    .tvFocusBorder(CircleShape)
+                    .testTag("settings_back_button")
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -129,11 +138,12 @@ fun SettingsScreen(
             )
         }
 
-        // Settings items
+        // Settings items (bounded max width for tablets and Fire TV)
         Column(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
+                .widthIn(max = 760.dp)
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp, vertical = 10.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -407,7 +417,9 @@ fun SettingsScreen(
         }
 
         // Bottom Banner Ad
-        BannerAdView(modifier = Modifier.padding(bottom = 6.dp))
+        if (!metrics.isCompactHeight && !metrics.isTv) {
+            BannerAdView(modifier = Modifier.padding(bottom = 6.dp))
+        }
     }
 
     // Reset Progress Confirmation Dialog
@@ -600,6 +612,7 @@ private fun SettingActionRow(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
+            .tvFocusBorder(RoundedCornerShape(12.dp))
             .clickable { onClick() }
             .padding(vertical = 8.dp, horizontal = 4.dp)
             .testTag(testTag),

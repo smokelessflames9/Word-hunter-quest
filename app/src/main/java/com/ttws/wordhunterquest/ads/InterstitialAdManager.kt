@@ -21,7 +21,7 @@ class InterstitialAdManager(private val context: Context) {
     }
 
     fun preloadAd() {
-        if (isLoading || interstitialAd != null || AdMobManager.isEmulator()) return
+        if (isLoading || interstitialAd != null || AdMobManager.shouldSkipAds(context)) return
         isLoading = true
 
         try {
@@ -44,10 +44,10 @@ class InterstitialAdManager(private val context: Context) {
                     }
                 }
             )
-        } catch (e: Exception) {
+        } catch (t: Throwable) {
             isLoading = false
             interstitialAd = null
-            Log.e(tag, "Error loading interstitial: ${e.message}")
+            Log.w(tag, "Error loading interstitial: ${t.message}")
         }
     }
 

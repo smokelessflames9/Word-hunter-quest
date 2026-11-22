@@ -6,6 +6,7 @@ import android.util.Log
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
+import com.ttws.wordhunterquest.ui.components.isTelevisionDevice
 
 object AdMobManager {
     private const val TAG = "AdMobManager"
@@ -24,8 +25,16 @@ object AdMobManager {
             Build.PRODUCT.contains("emulator")
     }
 
+    /**
+     * AdMob WebView SDK is disabled on emulators and TV form factors (Fire TV / Android TV)
+     * where D-pad focus must remain unobstructed and Google Play Services may be absent.
+     */
+    fun shouldSkipAds(context: Context): Boolean {
+        return isEmulator() || isTelevisionDevice(context)
+    }
+
     fun initialize(context: Context) {
-        if (isInitialized || isEmulator()) return
+        if (isInitialized || shouldSkipAds(context)) return
         try {
             val configuration = RequestConfiguration.Builder()
                 .setTestDeviceIds(listOf(AdRequest.DEVICE_ID_EMULATOR))
@@ -36,8 +45,8 @@ object AdMobManager {
                 isInitialized = true
                 Log.d(TAG, "AdMob SDK Initialized: ${initializationStatus.adapterStatusMap.keys}")
             }
-        } catch (e: Exception) {
-            Log.w(TAG, "AdMob initialization skipped: ${e.message}")
+        } catch (t: Throwable) {
+            Log.w(TAG, "AdMob initialization skipped on this device: ${t.message}")
         }
     }
 }

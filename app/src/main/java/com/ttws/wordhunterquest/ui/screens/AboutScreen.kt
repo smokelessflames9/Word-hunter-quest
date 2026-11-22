@@ -1,10 +1,9 @@
 package com.ttws.wordhunterquest.ui.screens
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,13 +13,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Code
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -35,8 +34,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ttws.wordhunterquest.BuildConfig
 import com.ttws.wordhunterquest.ui.components.BannerAdView
 import com.ttws.wordhunterquest.ui.components.GameLogo
+import com.ttws.wordhunterquest.ui.components.LocalResponsiveMetrics
+import com.ttws.wordhunterquest.ui.components.tvFocusBorder
 import com.ttws.wordhunterquest.ui.theme.CardNavy
 import com.ttws.wordhunterquest.ui.theme.MidnightBlue
 import com.ttws.wordhunterquest.ui.theme.QuestCyan
@@ -52,6 +54,7 @@ fun AboutScreen(
     modifier: Modifier = Modifier
 ) {
     BackHandler { onBack() }
+    val metrics = LocalResponsiveMetrics.current
 
     Column(
         modifier = modifier
@@ -64,12 +67,15 @@ fun AboutScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+                .widthIn(max = 760.dp)
+                .padding(horizontal = 16.dp, vertical = if (metrics.isCompactHeight) 6.dp else 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(
                 onClick = onBack,
-                modifier = Modifier.testTag("about_back_button")
+                modifier = Modifier
+                    .tvFocusBorder(CircleShape)
+                    .testTag("about_back_button")
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -91,22 +97,23 @@ fun AboutScreen(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
+                .widthIn(max = 760.dp)
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp, vertical = 10.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Game Logo (matching home screen and launcher icon)
             GameLogo(
+                compact = metrics.isCompactHeight,
                 modifier = Modifier.padding(vertical = 12.dp)
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
             // Game details card
             Card(
                 colors = CardDefaults.cardColors(containerColor = CardNavy),
                 shape = RoundedCornerShape(16.dp),
-                border = androidx.compose.foundation.BorderStroke(1.dp, SlateNavy),
+                border = BorderStroke(1.dp, SlateNavy),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(
@@ -160,7 +167,7 @@ fun AboutScreen(
                                 color = TextSecondary
                             )
                             Text(
-                                text = "1.0.0",
+                                text = BuildConfig.VERSION_NAME,
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = QuestGold
@@ -176,7 +183,7 @@ fun AboutScreen(
             Card(
                 colors = CardDefaults.cardColors(containerColor = CardNavy),
                 shape = RoundedCornerShape(16.dp),
-                border = androidx.compose.foundation.BorderStroke(1.dp, SlateNavy),
+                border = BorderStroke(1.dp, SlateNavy),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
@@ -190,17 +197,18 @@ fun AboutScreen(
                     Spacer(modifier = Modifier.height(8.dp))
                     FeatureBullet("20 unique themed levels with guaranteed solvability")
                     FeatureBullet("Real-time persistent score counter across all levels")
-                    FeatureBullet("Intuitive 8-direction smooth touch-and-drag word selection")
-                    FeatureBullet("Limited hint system with rewarded video option")
-                    FeatureBullet("Offline capable gameplay with local progress saving")
+                    FeatureBullet("Intuitive 8-direction smooth touch-and-drag and Fire TV D-pad controls")
+                    FeatureBullet("Adaptive portrait & landscape layout for phones, tablets, Fire tablets, and Fire TV")
+                    FeatureBullet("Offline capable gameplay with automatic on-device progress saving")
                 }
             }
 
             Spacer(modifier = Modifier.height(20.dp))
         }
 
-        // Banner Ad
-        BannerAdView(modifier = Modifier.padding(bottom = 6.dp))
+        if (!metrics.isCompactHeight && !metrics.isTv) {
+            BannerAdView(modifier = Modifier.padding(bottom = 6.dp))
+        }
     }
 }
 
